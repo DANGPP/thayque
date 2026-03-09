@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết đơn hàng {{ order.order_number }} - BookStore{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'order_history' %}">Đơn hàng</a></li>
+            <li class="breadcrumb-item active">{{ order.order_number }}</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-receipt me-2 text-primary"></i>Đơn hàng {{ order.order_number }}
+        </h2>
+        {% if order.status == 'pending' %}
+        <span class="badge bg-warning fs-6 py-2 px-3">{{ order.status_display }}</span>
+        {% elif order.status == 'confirmed' or order.status == 'processing' %}
+        <span class="badge bg-info fs-6 py-2 px-3">{{ order.status_display }}</span>
+        {% elif order.status == 'shipped' %}
+        <span class="badge bg-primary fs-6 py-2 px-3">{{ order.status_display }}</span>
+        {% elif order.status == 'delivered' %}
+        <span class="badge bg-success fs-6 py-2 px-3">{{ order.status_display }}</span>
+        {% elif order.status == 'cancelled' %}
+        <span class="badge bg-danger fs-6 py-2 px-3">{{ order.status_display }}</span>
+        {% else %}
+        <span class="badge bg-secondary fs-6 py-2 px-3">{{ order.status_display }}</span>
+        {% endif %}
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Order Items -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">Sản phẩm đặt mua</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td style="width: 80px;">
+                                    <img src="{{ item.book_image|default:'https://via.placeholder.com/60x80' }}" 
+                                         alt="{{ item.book_title }}" 
+                                         class="rounded" style="width: 60px; height: 80px; object-fit: cover;">
+                                </td>
+                                <td>
+                                    <h6 class="mb-1">{{ item.book_title }}</h6>
+                                    <small class="text-muted">{{ item.book_price|floatformat:0 }}đ x {{ item.quantity }}</small>
+                                </td>
+                                <td class="text-end fw-bold">{{ item.subtotal|floatformat:0 }}đ</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Order Status History -->
+            {% if order.status_history %}
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">Lịch sử đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    {% for history in order.status_history %}
+                    <div class="d-flex mb-3">
+                        <div class="me-3">
+                            <span class="badge rounded-pill bg-primary">{{ forloop.counter }}</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{{ history.status }}</h6>
+                            <p class="text-muted mb-0 small">{{ history.note }}</p>
+                            <small class="text-muted">{{ history.created_at }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Order Info -->
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">Thông tin đơn hàng</h5>
+                <div class="mb-2">
+                    <small class="text-muted">Ngày đặt:</small>
+                    <div class="fw-medium">{{ order.created_at }}</div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Thanh toán:</small>
+                    <div class="fw-medium">
+                        {% if order.payment_method == 'cod' %}COD
+                        {% elif order.payment_method == 'bank_transfer' %}Chuyển khoản
+                        {% else %}{{ order.payment_method }}{% endif %}
+                        {% if order.payment_status == 'completed' %}
+                        <span class="badge bg-success ms-1">Đã thanh toán</span>
+                        {% else %}
+                        <span class="badge bg-warning ms-1">Chưa thanh toán</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Info -->
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">Địa chỉ nhận hàng</h5>
+                <p class="mb-1"><strong>{{ order.customer_name }}</strong></p>
+                <p class="mb-1">{{ order.customer_phone }}</p>
+                <p class="mb-0 text-muted">{{ order.shipping_address }}</p>
+            </div>
+            
+            <!-- Payment Summary -->
+            <div class="card p-4">
+                <h5 class="fw-bold mb-3">Tổng tiền</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Tạm tính:</span>
+                    <span>{{ order.subtotal|floatformat:0 }}đ</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Phí vận chuyển:</span>
+                    <span>{{ order.shipping_fee|floatformat:0 }}đ</span>
+                </div>
+                {% if order.discount > 0 %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Giảm giá:</span>
+                    <span class="text-success">-{{ order.discount|floatformat:0 }}đ</span>
+                </div>
+                {% endif %}
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <span class="fw-bold fs-5">Tổng cộng:</span>
+                    <span class="fw-bold fs-5 text-danger">{{ order.total|floatformat:0 }}đ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

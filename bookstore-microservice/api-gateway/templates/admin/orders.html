@@ -1,0 +1,187 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block page_title %}Quản lý đơn hàng{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <form class="d-flex" method="get">
+            <input type="text" name="search" class="form-control me-2" placeholder="Mã đơn hàng..." value="{{ params.search|default:'' }}" style="width: 200px;">
+            <select name="status" class="form-select me-2" style="width: 160px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="pending" {% if params.status == 'pending' %}selected{% endif %}>Chờ xác nhận</option>
+                <option value="confirmed" {% if params.status == 'confirmed' %}selected{% endif %}>Đã xác nhận</option>
+                <option value="processing" {% if params.status == 'processing' %}selected{% endif %}>Đang xử lý</option>
+                <option value="shipped" {% if params.status == 'shipped' %}selected{% endif %}>Đang giao</option>
+                <option value="delivered" {% if params.status == 'delivered' %}selected{% endif %}>Hoàn thành</option>
+                <option value="cancelled" {% if params.status == 'cancelled' %}selected{% endif %}>Đã hủy</option>
+            </select>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mã đơn hàng</th>
+                    <th>Khách hàng</th>
+                    <th>Số SP</th>
+                    <th>Tổng tiền</th>
+                    <th>Thanh toán</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đặt</th>
+                    <th style="width: 180px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td class="fw-bold">{{ order.order_number }}</td>
+                    <td>
+                        <div>{{ order.customer_name }}</div>
+                        <small class="text-muted">{{ order.customer_phone }}</small>
+                    </td>
+                    <td>{{ order.item_count }}</td>
+                    <td class="fw-bold text-danger">{{ order.total|floatformat:0 }}đ</td>
+                    <td>
+                        {% if order.payment_status == 'completed' %}
+                        <span class="badge bg-success">Đã TT</span>
+                        {% else %}
+                        <span class="badge bg-warning">Chưa TT</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if order.status == 'pending' %}
+                        <span class="badge bg-warning">Chờ xác nhận</span>
+                        {% elif order.status == 'confirmed' %}
+                        <span class="badge bg-info">Đã xác nhận</span>
+                        {% elif order.status == 'processing' %}
+                        <span class="badge bg-primary">Đang xử lý</span>
+                        {% elif order.status == 'shipped' %}
+                        <span class="badge bg-primary">Đang giao</span>
+                        {% elif order.status == 'delivered' %}
+                        <span class="badge bg-success">Hoàn thành</span>
+                        {% elif order.status == 'cancelled' %}
+                        <span class="badge bg-danger">Đã hủy</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.created_at }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewOrder('{{ order.order_number }}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            {% if order.status == 'pending' %}
+                            <button class="btn btn-sm btn-success" onclick="updateStatus('{{ order.order_number }}', 'confirmed')">
+                                <i class="bi bi-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="updateStatus('{{ order.order_number }}', 'cancelled')">
+                                <i class="bi bi-x"></i>
+                            </button>
+                            {% elif order.status == 'confirmed' %}
+                            <button class="btn btn-sm btn-primary" onclick="updateStatus('{{ order.order_number }}', 'shipped')">
+                                <i class="bi bi-truck"></i>
+                            </button>
+                            {% elif order.status == 'shipped' %}
+                            <button class="btn btn-sm btn-success" onclick="updateStatus('{{ order.order_number }}', 'delivered')">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Chưa có đơn hàng</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Chi tiết đơn hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetail">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewOrder(orderNumber) {
+    const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+    modal.show();
+    
+    fetch(`/admin-panel/orders/${orderNumber}/`)
+        .then(res => res.json())
+        .then(order => {
+            document.getElementById('orderDetail').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Thông tin khách hàng</h6>
+                        <p class="mb-1"><strong>${order.customer_name}</strong></p>
+                        <p class="mb-1">${order.customer_phone}</p>
+                        <p class="mb-1">${order.shipping_address}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Thông tin đơn hàng</h6>
+                        <p class="mb-1">Mã: <strong>${order.order_number}</strong></p>
+                        <p class="mb-1">Ngày đặt: ${order.created_at}</p>
+                        <p class="mb-1">Thanh toán: ${order.payment_method}</p>
+                    </div>
+                </div>
+                <hr>
+                <h6 class="fw-bold">Sản phẩm</h6>
+                <table class="table">
+                    <thead><tr><th>Sản phẩm</th><th>Giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+                    <tbody>
+                        ${order.items.map(item => `
+                            <tr>
+                                <td>${item.book_title}</td>
+                                <td>${Number(item.book_price).toLocaleString()}đ</td>
+                                <td>${item.quantity}</td>
+                                <td>${Number(item.subtotal).toLocaleString()}đ</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr><td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td><td class="text-danger fw-bold">${Number(order.total).toLocaleString()}đ</td></tr>
+                    </tfoot>
+                </table>
+            `;
+        });
+}
+
+function updateStatus(orderNumber, status) {
+    const messages = {
+        'confirmed': 'Xác nhận đơn hàng này?',
+        'shipped': 'Xác nhận giao hàng?',
+        'delivered': 'Xác nhận đã giao thành công?',
+        'cancelled': 'Hủy đơn hàng này?'
+    };
+    
+    if (confirm(messages[status])) {
+        fetch(`/admin-panel/orders/${orderNumber}/status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `status=${status}`
+        }).then(() => location.reload());
+    }
+}
+</script>
+{% endblock %}

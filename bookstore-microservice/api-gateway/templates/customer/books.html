@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh sách sách - BookStore{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-funnel me-2"></i>Bộ lọc</h5>
+                
+                <form method="get">
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Tìm kiếm</label>
+                        <input type="text" name="search" class="form-control" value="{{ params.search }}" placeholder="Tên sách, tác giả...">
+                    </div>
+                    
+                    <!-- Category -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Danh mục</label>
+                        <select name="category" class="form-select">
+                            <option value="">Tất cả</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if params.category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Sort -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Sắp xếp</label>
+                        <select name="sort" class="form-select">
+                            <option value="-created_at" {% if params.sort == '-created_at' %}selected{% endif %}>Mới nhất</option>
+                            <option value="price" {% if params.sort == 'price' %}selected{% endif %}>Giá thấp đến cao</option>
+                            <option value="-price" {% if params.sort == '-price' %}selected{% endif %}>Giá cao đến thấp</option>
+                            <option value="-avg_rating" {% if params.sort == '-avg_rating' %}selected{% endif %}>Đánh giá cao nhất</option>
+                            <option value="-total_sold" {% if params.sort == '-total_sold' %}selected{% endif %}>Bán chạy nhất</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-2"></i>Tìm kiếm
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Books Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">
+                    <i class="bi bi-grid me-2 text-primary"></i>
+                    Tất cả sách
+                </h4>
+                <span class="badge bg-primary rounded-pill">{{ books|length }} sách</span>
+            </div>
+            
+            <div class="row g-4">
+                {% for book in books %}
+                <div class="col-6 col-md-4">
+                    <div class="card book-card h-100 position-relative">
+                        {% if book.is_featured %}
+                        <span class="badge-featured"><i class="bi bi-star-fill me-1"></i>Nổi bật</span>
+                        {% endif %}
+                        
+                        <a href="{% url 'book_detail' book.id %}">
+                            <img src="{{ book.cover_image|default:'https://via.placeholder.com/300x400' }}" class="card-img-top" alt="{{ book.title }}">
+                        </a>
+                        <div class="card-body">
+                            <a href="{% url 'book_detail' book.id %}" class="text-decoration-none">
+                                <h5 class="book-title">{{ book.title }}</h5>
+                            </a>
+                            <p class="book-author mb-2">{{ book.author_name|default:'Unknown' }}</p>
+                            <div class="rating-stars mb-2">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= book.avg_rating|floatformat:0|default:0 %}
+                                    <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                    <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <small class="text-muted">({{ book.total_reviews|default:0 }})</small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="book-price">{{ book.final_price|floatformat:0 }}đ</span>
+                                    {% if book.discount_price %}
+                                    <span class="book-price-old d-block">{{ book.price|floatformat:0 }}đ</span>
+                                    {% endif %}
+                                </div>
+                                <button class="btn btn-primary btn-sm add-to-cart" data-book-id="{{ book.id }}">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="bi bi-search"></i>
+                        <h5>Không tìm thấy sách</h5>
+                        <p class="text-muted">Hãy thử tìm kiếm với từ khóa khác</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.add-to-cart').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const bookId = this.dataset.bookId;
+        fetch('{% url "add_to_cart" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `book_id=${bookId}&quantity=1`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Đã thêm vào giỏ hàng!');
+            } else {
+                alert(data.error || 'Vui lòng đăng nhập');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

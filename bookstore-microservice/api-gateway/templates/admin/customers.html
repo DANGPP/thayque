@@ -1,0 +1,75 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block page_title %}Quản lý khách hàng{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <form class="d-flex" method="get">
+            <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm..." value="{{ params.search|default:'' }}" style="width: 300px;">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+        <span class="badge bg-primary rounded-pill">{{ customers|length }} khách hàng</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Khách hàng</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 100px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ customer.first_name }} {{ customer.last_name }}</h6>
+                                <small class="text-muted">@{{ customer.username }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.phone|default:'-' }}</td>
+                    <td>{{ customer.date_joined }}</td>
+                    <td>
+                        {% if customer.is_active %}
+                        <span class="badge bg-success">Hoạt động</span>
+                        {% else %}
+                        <span class="badge bg-danger">Bị khóa</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewCustomer({{ customer.id }})">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Chưa có khách hàng</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewCustomer(id) {
+    alert('Xem chi tiết khách hàng #' + id);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+-- Create databases for all services
+CREATE DATABASE customer_db;
+CREATE DATABASE book_db;
+CREATE DATABASE cart_db;
+CREATE DATABASE order_db;
+CREATE DATABASE pay_db;
+CREATE DATABASE ship_db;
+CREATE DATABASE comment_db;
+CREATE DATABASE staff_db;
+
+-- Grant privileges
+GRANT ALL PRIVILEGES ON DATABASE customer_db TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE book_db TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE cart_db TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE order_db TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE pay_db TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE ship_db TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE comment_db TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE staff_db TO postgres;

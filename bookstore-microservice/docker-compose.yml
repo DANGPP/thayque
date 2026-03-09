@@ -1,0 +1,209 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: bookstore-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bookstore-network
+
+  # Customer Service
+  customer-service:
+    build: ./customer-service
+    container_name: customer-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=customer_db
+      - CART_SERVICE_URL=http://cart-service:8000
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # Book Service
+  book-service:
+    build: ./book-service
+    container_name: book-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=book_db
+    ports:
+      - "8002:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # Cart Service
+  cart-service:
+    build: ./cart-service
+    container_name: cart-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=cart_db
+      - BOOK_SERVICE_URL=http://book-service:8000
+    ports:
+      - "8003:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # Order Service
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=order_db
+      - CART_SERVICE_URL=http://cart-service:8000
+      - BOOK_SERVICE_URL=http://book-service:8000
+      - PAY_SERVICE_URL=http://pay-service:8000
+      - SHIP_SERVICE_URL=http://ship-service:8000
+    ports:
+      - "8004:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # Payment Service
+  pay-service:
+    build: ./pay-service
+    container_name: pay-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=pay_db
+    ports:
+      - "8005:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # Shipping Service
+  ship-service:
+    build: ./ship-service
+    container_name: ship-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=ship_db
+    ports:
+      - "8006:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # Comment/Rate Service
+  comment-rate-service:
+    build: ./comment-rate-service
+    container_name: comment-rate-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=comment_db
+      - BOOK_SERVICE_URL=http://book-service:8000
+    ports:
+      - "8007:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # Staff Service
+  staff-service:
+    build: ./staff-service
+    container_name: staff-service
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_NAME=staff_db
+    ports:
+      - "8008:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      - SECRET_KEY=bookstore-secret-key-2024
+      - DEBUG=True
+      - CUSTOMER_SERVICE_URL=http://customer-service:8000
+      - BOOK_SERVICE_URL=http://book-service:8000
+      - CART_SERVICE_URL=http://cart-service:8000
+      - ORDER_SERVICE_URL=http://order-service:8000
+      - PAY_SERVICE_URL=http://pay-service:8000
+      - SHIP_SERVICE_URL=http://ship-service:8000
+      - COMMENT_SERVICE_URL=http://comment-rate-service:8000
+      - STAFF_SERVICE_URL=http://staff-service:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - customer-service
+      - book-service
+      - cart-service
+      - order-service
+      - pay-service
+      - ship-service
+      - comment-rate-service
+      - staff-service
+    networks:
+      - bookstore-network
+
+volumes:
+  postgres_data:
+
+networks:
+  bookstore-network:
+    driver: bridge

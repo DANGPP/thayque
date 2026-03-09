@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Đơn hàng của tôi - BookStore{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4"><i class="bi bi-box me-2 text-primary"></i>Đơn hàng của tôi</h2>
+    
+    {% if orders %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Mã đơn hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Số sản phẩm</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'order_detail' order.order_number %}" class="fw-bold text-primary">
+                                {{ order.order_number }}
+                            </a>
+                        </td>
+                        <td>{{ order.created_at }}</td>
+                        <td>{{ order.item_count }} sản phẩm</td>
+                        <td class="fw-bold text-danger">{{ order.total|floatformat:0 }}đ</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                            <span class="badge bg-warning">{{ order.status_display }}</span>
+                            {% elif order.status == 'confirmed' or order.status == 'processing' %}
+                            <span class="badge bg-info">{{ order.status_display }}</span>
+                            {% elif order.status == 'shipped' %}
+                            <span class="badge bg-primary">{{ order.status_display }}</span>
+                            {% elif order.status == 'delivered' %}
+                            <span class="badge bg-success">{{ order.status_display }}</span>
+                            {% elif order.status == 'cancelled' %}
+                            <span class="badge bg-danger">{{ order.status_display }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ order.status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'order_detail' order.order_number %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h5>Chưa có đơn hàng nào</h5>
+        <p class="text-muted">Bạn chưa đặt đơn hàng nào</p>
+        <a href="{% url 'books' %}" class="btn btn-primary">
+            <i class="bi bi-grid me-2"></i>Mua sắm ngay
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

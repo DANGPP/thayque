@@ -1,0 +1,187 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block page_title %}Quản lý sách{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <form class="d-flex me-3" method="get">
+                <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm sách..." value="{{ params.search|default:'' }}" style="width: 250px;">
+                <select name="category" class="form-select me-2" style="width: 150px;">
+                    <option value="">Tất cả</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if params.category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+            <i class="bi bi-plus-circle me-2"></i>Thêm sách
+        </button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 60px;"></th>
+                    <th>Tên sách</th>
+                    <th>Danh mục</th>
+                    <th>Giá</th>
+                    <th>Tồn kho</th>
+                    <th>Đã bán</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 120px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <td>
+                        <img src="{{ book.cover_image|default:'https://via.placeholder.com/50x65' }}" 
+                             class="rounded" style="width: 45px; height: 60px; object-fit: cover;">
+                    </td>
+                    <td>
+                        <h6 class="mb-0">{{ book.title }}</h6>
+                        <small class="text-muted">{{ book.author_name|default:'N/A' }}</small>
+                    </td>
+                    <td>{{ book.category_name|default:'N/A' }}</td>
+                    <td>
+                        <span class="fw-bold text-danger">{{ book.price|floatformat:0 }}đ</span>
+                        {% if book.discount_price %}
+                        <br><small class="text-muted">KM: {{ book.discount_price|floatformat:0 }}đ</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if book.stock <= 5 %}
+                        <span class="badge bg-danger">{{ book.stock }}</span>
+                        {% else %}
+                        <span class="badge bg-success">{{ book.stock }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ book.total_sold|default:0 }}</td>
+                    <td>
+                        {% if book.is_active %}
+                        <span class="badge bg-success">Đang bán</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Ẩn</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editBook({{ book.id }})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteBook({{ book.id }})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Chưa có sách nào</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Book Modal -->
+<div class="modal fade" id="addBookModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Thêm sách mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'admin_add_book' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-medium">Tên sách <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">ISBN</label>
+                            <input type="text" name="isbn" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Danh mục</label>
+                            <select name="category" class="form-select">
+                                <option value="">Chọn danh mục</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Tác giả</label>
+                            <select name="author" class="form-select">
+                                <option value="">Chọn tác giả</option>
+                                {% for author in authors %}
+                                <option value="{{ author.id }}">{{ author.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Giá <span class="text-danger">*</span></label>
+                            <input type="number" name="price" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Giá khuyến mãi</label>
+                            <input type="number" name="discount_price" class="form-control">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Số lượng <span class="text-danger">*</span></label>
+                            <input type="number" name="stock" class="form-control" value="0" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-medium">Link ảnh bìa</label>
+                            <input type="url" name="cover_image" class="form-control" placeholder="https://...">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-medium">Mô tả</label>
+                            <textarea name="description" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active" checked>
+                                <label class="form-check-label" for="is_active">Hiển thị bán</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_featured" value="1" id="is_featured">
+                                <label class="form-check-label" for="is_featured">Sách nổi bật</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm sách</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editBook(id) {
+    window.location.href = `{% url 'admin_books' %}?edit=${id}`;
+}
+
+function deleteBook(id) {
+    if (confirm('Bạn có chắc muốn xóa sách này?')) {
+        fetch(`/admin-panel/books/${id}/delete/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'}
+        }).then(() => location.reload());
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}BookStore - Nơi sách hay tìm đến bạn{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title animate-fadeInUp">Khám phá thế giới qua từng trang sách</h1>
+                <p class="hero-subtitle animate-fadeInUp">Hàng ngàn đầu sách hay với giá tốt nhất. Miễn phí vận chuyển cho đơn hàng từ 200.000đ</p>
+                <a href="{% url 'books' %}" class="btn btn-light btn-lg mt-3 animate-fadeInUp">
+                    <i class="bi bi-arrow-right me-2"></i>Khám phá ngay
+                </a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500" alt="Books" class="img-fluid rounded-4 shadow-lg" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories -->
+<section class="container mb-5">
+    <h2 class="section-title">Danh mục sách</h2>
+    <div class="mt-4">
+        {% for category in categories %}
+        <a href="{% url 'books' %}?category={{ category.id }}" class="category-badge">
+            {{ category.name }}
+        </a>
+        {% empty %}
+        <p class="text-muted">Chưa có danh mục nào</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Featured Books -->
+<section class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0">Sách nổi bật</h2>
+        <a href="{% url 'books' %}?featured=true" class="btn btn-outline-primary">
+            Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    
+    <div class="row g-4">
+        {% for book in featured_books %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card book-card h-100 position-relative">
+                {% if book.is_featured %}
+                <span class="badge-featured"><i class="bi bi-star-fill me-1"></i>Nổi bật</span>
+                {% endif %}
+                {% if book.discount_price %}
+                <span class="badge-discount">-{{ book.discount_price|floatformat:0 }}%</span>
+                {% endif %}
+                
+                <a href="{% url 'book_detail' book.id %}">
+                    <img src="{{ book.cover_image|default:'https://via.placeholder.com/300x400' }}" class="card-img-top" alt="{{ book.title }}">
+                </a>
+                <div class="card-body">
+                    <a href="{% url 'book_detail' book.id %}" class="text-decoration-none">
+                        <h5 class="book-title">{{ book.title }}</h5>
+                    </a>
+                    <p class="book-author mb-2">{{ book.author_name|default:'Unknown' }}</p>
+                    <div class="rating-stars mb-2">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= book.avg_rating|floatformat:0|default:0 %}
+                            <i class="bi bi-star-fill"></i>
+                            {% else %}
+                            <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <small class="text-muted">({{ book.total_reviews|default:0 }})</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="book-price">{{ book.final_price|floatformat:0 }}đ</span>
+                            {% if book.discount_price %}
+                            <span class="book-price-old d-block">{{ book.price|floatformat:0 }}đ</span>
+                            {% endif %}
+                        </div>
+                        <button class="btn btn-primary btn-sm add-to-cart" data-book-id="{{ book.id }}">
+                            <i class="bi bi-cart-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-book"></i>
+                <h5>Chưa có sách nào</h5>
+                <p class="text-muted">Vui lòng thêm sách từ trang quản trị</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="container mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4" style="border-radius: 20px;">
+                <div class="mb-3">
+                    <span class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                        <i class="bi bi-truck fs-3"></i>
+                    </span>
+                </div>
+                <h5 class="fw-bold">Miễn phí vận chuyển</h5>
+                <p class="text-muted mb-0">Cho đơn hàng từ 200.000đ toàn quốc</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4" style="border-radius: 20px;">
+                <div class="mb-3">
+                    <span class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                        <i class="bi bi-shield-check fs-3"></i>
+                    </span>
+                </div>
+                <h5 class="fw-bold">Đảm bảo chất lượng</h5>
+                <p class="text-muted mb-0">100% sách chính hãng, nguồn gốc rõ ràng</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4" style="border-radius: 20px;">
+                <div class="mb-3">
+                    <span class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                        <i class="bi bi-arrow-repeat fs-3"></i>
+                    </span>
+                </div>
+                <h5 class="fw-bold">Đổi trả dễ dàng</h5>
+                <p class="text-muted mb-0">Đổi trả trong 7 ngày nếu có lỗi</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.add-to-cart').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const bookId = this.dataset.bookId;
+        fetch('{% url "add_to_cart" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `book_id=${bookId}&quantity=1`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Đã thêm vào giỏ hàng!');
+            } else {
+                alert(data.error || 'Vui lòng đăng nhập');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
