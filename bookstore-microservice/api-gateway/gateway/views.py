@@ -141,7 +141,11 @@ class AddToCartView(View):
     def post(self, request):
         customer = request.session.get('customer')
         if not customer:
-            return JsonResponse({'error': 'Vui lòng đăng nhập'}, status=401)
+            # Kiểm tra AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
+                return JsonResponse({'error': 'Vui lòng đăng nhập'}, status=401)
+            messages.error(request, 'Vui lòng đăng nhập để thêm vào giỏ hàng')
+            return redirect('customer_login')
         
         data = {
             'book_id': request.POST.get('book_id'),
@@ -150,9 +154,20 @@ class AddToCartView(View):
         
         result, status_code = ServiceClient.post('cart', f"carts/{customer['id']}/add/", data)
         
+        # Kiểm tra AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json'
+        
         if status_code == 201:
-            return JsonResponse({'success': True, 'cart': result})
-        return JsonResponse({'error': 'Thêm vào giỏ hàng thất bại'}, status=400)
+            if is_ajax:
+                return JsonResponse({'success': True, 'cart': result})
+            messages.success(request, 'Đã thêm sách vào giỏ hàng!')
+            # Redirect về trang trước đó hoặc trang giỏ hàng
+            return redirect(request.META.get('HTTP_REFERER', 'cart'))
+        
+        if is_ajax:
+            return JsonResponse({'error': 'Thêm vào giỏ hàng thất bại'}, status=400)
+        messages.error(request, 'Thêm vào giỏ hàng thất bại')
+        return redirect(request.META.get('HTTP_REFERER', 'customer_books'))
 
 
 class UpdateCartView(View):
@@ -403,8 +418,8 @@ class AdminBookCreateView(View):
             'author': request.POST.get('author') or None,
             'publisher': request.POST.get('publisher') or None,
             'cover_image': request.POST.get('cover_image'),
-            'is_active': request.POST.get('is_active') == 'on',
-            'is_featured': request.POST.get('is_featured') == 'on',
+            'is_active': bool(request.POST.get('is_active')),
+            'is_featured': bool(request.POST.get('is_featured')),
         }
         
         result, status_code = ServiceClient.post('book', 'books/', data)

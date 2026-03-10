@@ -144,21 +144,38 @@
 document.querySelectorAll('.add-to-cart').forEach(btn => {
     btn.addEventListener('click', function() {
         const bookId = this.dataset.bookId;
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang thêm...';
+        this.disabled = true;
+        
         fetch('{% url "add_to_cart" %}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: `book_id=${bookId}&quantity=1`
         })
         .then(res => res.json())
         .then(data => {
+            this.innerHTML = originalText;
+            this.disabled = false;
             if (data.success) {
-                alert('Đã thêm vào giỏ hàng!');
+                showToast('Đã thêm sách vào giỏ hàng!', 'success');
+                // Cập nhật số lượng giỏ hàng nếu có
+                const cartBadge = document.querySelector('.badge.bg-danger');
+                if (cartBadge && data.cart && data.cart.total_items) {
+                    cartBadge.textContent = data.cart.total_items;
+                }
             } else {
-                alert(data.error || 'Vui lòng đăng nhập');
+                showToast(data.error || 'Vui lòng đăng nhập', 'error');
             }
+        })
+        .catch(err => {
+            this.innerHTML = originalText;
+            this.disabled = false;
+            showToast('Có lỗi xảy ra, vui lòng thử lại', 'error');
         });
     });
 });
