@@ -24,6 +24,7 @@ services:
   # Customer Service
   customer-service:
     build: ./customer-service
+    image: bookstore-customer-service:${TAG:-latest}
     container_name: customer-service
     environment:
       - DB_HOST=postgres
@@ -43,6 +44,7 @@ services:
   # Book Service
   book-service:
     build: ./book-service
+    image: bookstore-book-service:${TAG:-latest}
     container_name: book-service
     environment:
       - DB_HOST=postgres
@@ -61,6 +63,7 @@ services:
   # Cart Service
   cart-service:
     build: ./cart-service
+    image: bookstore-cart-service:${TAG:-latest}
     container_name: cart-service
     environment:
       - DB_HOST=postgres
@@ -80,6 +83,7 @@ services:
   # Order Service
   order-service:
     build: ./order-service
+    image: bookstore-order-service:${TAG:-latest}
     container_name: order-service
     environment:
       - DB_HOST=postgres
@@ -102,6 +106,7 @@ services:
   # Payment Service
   pay-service:
     build: ./pay-service
+    image: bookstore-pay-service:${TAG:-latest}
     container_name: pay-service
     environment:
       - DB_HOST=postgres
@@ -120,6 +125,7 @@ services:
   # Shipping Service
   ship-service:
     build: ./ship-service
+    image: bookstore-ship-service:${TAG:-latest}
     container_name: ship-service
     environment:
       - DB_HOST=postgres
@@ -138,6 +144,7 @@ services:
   # Comment/Rate Service
   comment-rate-service:
     build: ./comment-rate-service
+    image: bookstore-comment-rate-service:${TAG:-latest}
     container_name: comment-rate-service
     environment:
       - DB_HOST=postgres
@@ -157,6 +164,7 @@ services:
   # Staff Service
   staff-service:
     build: ./staff-service
+    image: bookstore-staff-service:${TAG:-latest}
     container_name: staff-service
     environment:
       - DB_HOST=postgres
@@ -175,6 +183,7 @@ services:
   # API Gateway
   api-gateway:
     build: ./api-gateway
+    image: bookstore-api-gateway:${TAG:-latest}
     container_name: api-gateway
     environment:
       - SECRET_KEY=bookstore-secret-key-2024

@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     # Customer views
     HomeView, BookListView, BookDetailView,
-    CustomerRegisterView, CustomerLoginView, CustomerLogoutView,
+    CustomerRegisterView, CustomerLoginView, CustomerLogoutView, CustomerProfileView,
     CartView, AddToCartView, UpdateCartView, RemoveCartItemView,
     CheckoutView, OrderHistoryView, OrderDetailView, WriteReviewView,
     # Admin views
@@ -22,6 +22,7 @@ urlpatterns = [
     path('register/', CustomerRegisterView.as_view(), name='customer_register'),
     path('login/', CustomerLoginView.as_view(), name='customer_login'),
     path('logout/', CustomerLogoutView.as_view(), name='customer_logout'),
+    path('profile/', CustomerProfileView.as_view(), name='customer_profile'),
     path('cart/', CartView.as_view(), name='cart'),
     path('cart/add/', AddToCartView.as_view(), name='add_to_cart'),
     path('cart/update/<int:item_id>/', UpdateCartView.as_view(), name='update_cart'),

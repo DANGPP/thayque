@@ -119,6 +119,86 @@ class CustomerLogoutView(View):
         return redirect('home')
 
 
+class CustomerProfileView(View):
+    """Xem và cập nhật profile khách hàng"""
+    def get(self, request):
+        customer = request.session.get('customer')
+        if not customer:
+            messages.warning(request, 'Vui lòng đăng nhập')
+            return redirect('customer_login')
+        
+        # Lấy thông tin customer chi tiết
+        customer_detail = ServiceClient.get('customer', f"customers/{customer['id']}/")
+        if customer_detail:
+            request.session['customer'] = customer_detail
+            customer = customer_detail
+        
+        context = {
+            'customer': customer,
+        }
+        return render(request, 'customer/profile.html', context)
+    
+    def post(self, request):
+        customer = request.session.get('customer')
+        if not customer:
+            return redirect('customer_login')
+        
+        # Prepare nested data structure for new API
+        data = {
+            'phone': request.POST.get('phone', ''),
+            'email': request.POST.get('email', ''),
+            'first_name': request.POST.get('first_name', ''),
+            'last_name': request.POST.get('last_name', ''),
+            'date_of_birth': request.POST.get('date_of_birth', ''),
+        }
+        
+        # Personal info
+        personal_info = {}
+        if request.POST.get('fullname'):
+            personal_info['fullname'] = request.POST.get('fullname')
+        if request.POST.get('nickname'):
+            personal_info['nickname'] = request.POST.get('nickname')
+        if request.POST.get('gender'):
+            personal_info['gender'] = request.POST.get('gender')
+        if personal_info:
+            data['personal_info'] = personal_info
+        
+        # Job info
+        job_info = {}
+        if request.POST.get('job_title'):
+            job_info['job_title'] = request.POST.get('job_title')
+        if request.POST.get('company'):
+            job_info['company'] = request.POST.get('company')
+        if request.POST.get('industry'):
+            job_info['industry'] = request.POST.get('industry')
+        if job_info:
+            data['job_info'] = job_info
+        
+        # Address info
+        address_info = {}
+        if request.POST.get('street_address'):
+            address_info['street_address'] = request.POST.get('street_address')
+        if request.POST.get('ward'):
+            address_info['ward'] = request.POST.get('ward')
+        if request.POST.get('district'):
+            address_info['district'] = request.POST.get('district')
+        if request.POST.get('city'):
+            address_info['city'] = request.POST.get('city')
+        if address_info:
+            data['address_info'] = address_info
+        
+        result, status_code = ServiceClient.put('customer', f"customers/{customer['id']}/update/", data)
+        
+        if status_code == 200:
+            # Cập nhật session
+            request.session['customer'] = result.get('customer', customer)
+            messages.success(request, 'Cập nhật thông tin thành công!')
+        else:
+            messages.error(request, result.get('error', 'Cập nhật thất bại'))
+        
+        return redirect('customer_profile')
+
+
 class CartView(View):
     """Xem giỏ hàng"""
     def get(self, request):

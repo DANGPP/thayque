@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block title %}Thông tin cá nhân - BookStore{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if customer.avatar %}
+                            <img src="{{ customer.avatar }}" alt="{{ customer.username }}" class="rounded-circle" width="100" height="100">
+                        {% else %}
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px; font-size: 2rem;">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-1">{{ customer.personal_info.fullname|default:customer.username }}</h5>
+                    <p class="text-muted small mb-0">{{ customer.email }}</p>
+                    {% if customer.job_info.job_title %}
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-briefcase"></i> {{ customer.job_info.job_title }}
+                        {% if customer.job_info.company %} @ {{ customer.job_info.company }}{% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="list-group">
+                <a href="{% url 'customer_profile' %}" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-person-fill me-2"></i>Thông tin cá nhân
+                </a>
+                <a href="{% url 'order_history' %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-bag-check me-2"></i>Đơn hàng của tôi
+                </a>
+                <a href="{% url 'cart' %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-cart me-2"></i>Giỏ hàng
+                </a>
+                <a href="{% url 'customer_logout' %}" class="list-group-item list-group-item-action text-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card p-4 p-md-5">
+                <div class="mb-4">
+                    <h3 class="fw-bold">
+                        <i class="bi bi-person-badge text-primary me-2"></i>Thông tin cá nhân
+                    </h3>
+                    <p class="text-muted">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Personal Information Section -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-primary mb-3">
+                            <i class="bi bi-person-circle me-2"></i>Thông tin cá nhân
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-person me-1"></i>Họ tên đầy đủ
+                                </label>
+                                <input type="text" name="fullname" class="form-control" 
+                                    value="{{ customer.personal_info.fullname|default:'' }}" 
+                                    placeholder="Nhập họ tên đầy đủ">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-emoji-smile me-1"></i>Biệt danh
+                                </label>
+                                <input type="text" name="nickname" class="form-control" 
+                                    value="{{ customer.personal_info.nickname|default:'' }}" 
+                                    placeholder="Tên thân mật">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-gender-ambiguous me-1"></i>Giới tính
+                                </label>
+                                <select name="gender" class="form-select">
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="male" {% if customer.personal_info.gender == 'male' %}selected{% endif %}>Nam</option>
+                                    <option value="female" {% if customer.personal_info.gender == 'female' %}selected{% endif %}>Nữ</option>
+                                    <option value="other" {% if customer.personal_info.gender == 'other' %}selected{% endif %}>Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-calendar me-1"></i>Ngày sinh
+                                </label>
+                                <input type="date" name="date_of_birth" class="form-control" 
+                                    value="{{ customer.date_of_birth|date:'Y-m-d'|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Information Section -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-success mb-3">
+                            <i class="bi bi-briefcase-fill me-2"></i>Thông tin nghề nghiệp
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-briefcase me-1"></i>Chức vụ / Nghề nghiệp
+                                </label>
+                                <input type="text" name="job_title" class="form-control" 
+                                    value="{{ customer.job_info.job_title|default:'' }}" 
+                                    placeholder="Ví dụ: Software Engineer">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-building me-1"></i>Công ty
+                                </label>
+                                <input type="text" name="company" class="form-control" 
+                                    value="{{ customer.job_info.company|default:'' }}" 
+                                    placeholder="Tên công ty">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">
+                                <i class="bi bi-diagram-3 me-1"></i>Ngành nghề
+                            </label>
+                            <input type="text" name="industry" class="form-control" 
+                                value="{{ customer.job_info.industry|default:'' }}" 
+                                placeholder="Ví dụ: Information Technology">
+                        </div>
+                    </div>
+
+                    <!-- Address Information Section -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-info mb-3">
+                            <i class="bi bi-geo-alt-fill me-2"></i>Thông tin địa chỉ
+                        </h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">
+                                <i class="bi bi-house me-1"></i>Địa chỉ cụ thể
+                            </label>
+                            <input type="text" name="street_address" class="form-control" 
+                                value="{{ customer.address_info.street_address|default:'' }}" 
+                                placeholder="Số nhà, tên đường">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-medium">Phường/Xã</label>
+                                <input type="text" name="ward" class="form-control" 
+                                    value="{{ customer.address_info.ward|default:'' }}" 
+                                    placeholder="Phường/Xã">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-medium">Quận/Huyện</label>
+                                <input type="text" name="district" class="form-control" 
+                                    value="{{ customer.address_info.district|default:'' }}" 
+                                    placeholder="Quận/Huyện">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-medium">Tỉnh/Thành phố</label>
+                                <input type="text" name="city" class="form-control" 
+                                    value="{{ customer.address_info.city|default:'' }}" 
+                                    placeholder="Tỉnh/Thành phố">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Section -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-warning mb-3">
+                            <i class="bi bi-telephone-fill me-2"></i>Thông tin liên hệ
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">Họ</label>
+                                <input type="text" name="first_name" class="form-control" 
+                                    value="{{ customer.first_name|default:'' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">Tên</label>
+                                <input type="text" name="last_name" class="form-control" 
+                                    value="{{ customer.last_name|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-envelope me-1"></i>Email
+                                </label>
+                                <input type="email" name="email" class="form-control" 
+                                    value="{{ customer.email }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-telephone me-1"></i>Số điện thoại
+                                </label>
+                                <input type="tel" name="phone" class="form-control" 
+                                    value="{{ customer.phone|default:'' }}" 
+                                    placeholder="Số điện thoại">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-top pt-4 mt-4">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-2"></i>Lưu thay đổi
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-x-circle me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            {% if customer.profile %}
+            <div class="card mt-4 p-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-star text-warning me-2"></i>Thông tin khách hàng thân thiết
+                </h5>
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="bg-light rounded p-3">
+                            <i class="bi bi-trophy text-warning" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2 mb-0 text-primary">{{ customer.profile.loyalty_points }}</h4>
+                            <p class="text-muted small mb-0">Điểm tích lũy</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="bg-light rounded p-3">
+                            <i class="bi bi-bag-check text-success" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2 mb-0 text-primary">{{ customer.profile.total_orders }}</h4>
+                            <p class="text-muted small mb-0">Đơn hàng</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="bg-light rounded p-3">
+                            <i class="bi bi-cash-coin text-info" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2 mb-0 text-primary">{{ customer.profile.total_spent|floatformat:0 }}đ</h4>
+                            <p class="text-muted small mb-0">Tổng chi tiêu</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

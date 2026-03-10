@@ -7,12 +7,16 @@ from django.conf import settings
 import requests
 import logging
 
-from .models import Customer, CustomerProfile
+from .models import Customer, CustomerProfile, PersonalInfo, JobInfo, AddressInfo
 from .serializers import (
     CustomerSerializer, 
     CustomerRegistrationSerializer,
     CustomerLoginSerializer,
-    CustomerProfileSerializer
+    CustomerProfileSerializer,
+    CustomerUpdateSerializer,
+    PersonalInfoSerializer,
+    JobInfoSerializer,
+    AddressInfoSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -136,6 +140,26 @@ class CustomerProfileView(APIView):
         except CustomerProfile.DoesNotExist:
             return Response(
                 {'error': 'Không tìm thấy profile'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class UpdateCustomerView(APIView):
+    """Update customer profile"""
+    def put(self, request, pk):
+        try:
+            customer = Customer.objects.get(pk=pk)
+            serializer = CustomerUpdateSerializer(customer, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'message': 'Cập nhật thông tin thành công',
+                    'customer': CustomerSerializer(customer).data
+                })
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Customer.DoesNotExist:
+            return Response(
+                {'error': 'Không tìm thấy khách hàng'},
                 status=status.HTTP_404_NOT_FOUND
             )
 

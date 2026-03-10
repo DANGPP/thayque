@@ -15,6 +15,10 @@
                 
                 <form method="post">
                     {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Họ tên đầy đủ</label>
+                        <input type="text" name="fullname" class="form-control" value="{{ data.fullname|default:'' }}" placeholder="Nhập họ tên đầy đủ">
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-medium">Họ</label>
@@ -24,6 +28,10 @@
                             <label class="form-label fw-medium">Tên</label>
                             <input type="text" name="last_name" class="form-control" value="{{ data.last_name|default:'' }}">
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Nghề nghiệp</label>
+                        <input type="text" name="job_title" class="form-control" value="{{ data.job_title|default:'' }}" placeholder="Nghề nghiệp">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-medium">Tên đăng nhập <span class="text-danger">*</span></label>
@@ -36,6 +44,10 @@
                     <div class="mb-3">
                         <label class="form-label fw-medium">Số điện thoại</label>
                         <input type="tel" name="phone" class="form-control" value="{{ data.phone|default:'' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Địa chỉ</label>
+                        <input type="text" name="street_address" class="form-control" value="{{ data.street_address|default:'' }}" placeholder="Số nhà, tên đường">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
