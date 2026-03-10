@@ -9,6 +9,7 @@ from .views import (
     AdminLoginView, AdminLogoutView, AdminDashboardView,
     AdminBooksView, AdminBookCreateView, AdminOrdersView, AdminOrderDetailView,
     AdminCustomersView, AdminCategoriesView, AdminReviewsView,
+    AdminAddAuthorView, AdminAddPublisherView,
     # API
     APIProxyView,
 )
@@ -41,6 +42,8 @@ urlpatterns = [
     path('admin-panel/customers/', AdminCustomersView.as_view(), name='admin_customers'),
     path('admin-panel/categories/', AdminCategoriesView.as_view(), name='admin_categories'),
     path('admin-panel/reviews/', AdminReviewsView.as_view(), name='admin_reviews'),
+    path('admin-panel/authors/add/', AdminAddAuthorView.as_view(), name='admin_add_author'),
+    path('admin-panel/publishers/add/', AdminAddPublisherView.as_view(), name='admin_add_publisher'),
     
     # API proxy
     path('api/<str:service>/<path:path>', APIProxyView.as_view(), name='api_proxy'),

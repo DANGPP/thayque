@@ -1,8 +1,11 @@
 from rest_framework import serializers
+from django.utils.text import slugify
 from .models import Category, Author, Publisher, Book, BookImage
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(required=False, allow_blank=True, allow_null=True)
+    
     class Meta:
         model = Category
         fields = '__all__'
@@ -32,6 +35,7 @@ class BookSerializer(serializers.ModelSerializer):
     publisher_name = serializers.CharField(source='publisher.name', read_only=True)
     images = BookImageSerializer(many=True, read_only=True)
     final_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    slug = serializers.SlugField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Book

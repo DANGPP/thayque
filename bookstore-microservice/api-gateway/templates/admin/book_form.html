@@ -1,0 +1,224 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block page_title %}Thêm sách mới{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-book me-2"></i>Thêm sách mới
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'admin_book_create' %}">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-medium">Tên sách <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">ISBN</label>
+                            <input type="text" name="isbn" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Danh mục</label>
+                            <select name="category" class="form-select">
+                                <option value="">Chọn danh mục</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Tác giả</label>
+                            <select name="author" class="form-select">
+                                <option value="">Chọn tác giả</option>
+                                {% for author in authors %}
+                                <option value="{{ author.id }}">{{ author.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Nhà xuất bản</label>
+                            <select name="publisher" class="form-select">
+                                <option value="">Chọn NXB</option>
+                                {% for publisher in publishers %}
+                                <option value="{{ publisher.id }}">{{ publisher.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Giá <span class="text-danger">*</span></label>
+                            <input type="number" name="price" class="form-control" required min="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Giá khuyến mãi</label>
+                            <input type="number" name="discount_price" class="form-control" min="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-medium">Số lượng <span class="text-danger">*</span></label>
+                            <input type="number" name="stock" class="form-control" value="0" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Slug (URL thân thiện)</label>
+                        <input type="text" name="slug" class="form-control" placeholder="vd: sach-lap-trinh-python">
+                        <small class="text-muted">Để trống để tự động tạo từ tên sách</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Link ảnh bìa</label>
+                        <input type="url" name="cover_image" class="form-control" placeholder="https://...">
+                        <small class="text-muted">URL của ảnh bìa sách</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Mô tả</label>
+                        <textarea name="description" class="form-control" rows="5" placeholder="Nhập mô tả chi tiết về sách..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active" checked>
+                                <label class="form-check-label fw-medium" for="is_active">
+                                    Hiển thị trên website
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_featured" value="1" id="is_featured">
+                                <label class="form-check-label fw-medium" for="is_featured">
+                                    Sách nổi bật
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-circle me-2"></i>Thêm sách
+                        </button>
+                        <a href="{% url 'admin_books' %}" class="btn btn-secondary px-4">
+                            <i class="bi bi-x-circle me-2"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Add Forms -->
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0 fw-bold">Thêm danh mục nhanh</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'admin_categories' %}" id="quickCategoryForm">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <input type="text" name="name" class="form-control form-control-sm" placeholder="Tên danh mục" required>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success w-100">Thêm</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0 fw-bold">Thêm tác giả nhanh</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'admin_add_author' %}" id="quickAuthorForm">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <input type="text" name="name" class="form-control form-control-sm" placeholder="Tên tác giả" required>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success w-100">Thêm</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0 fw-bold">Thêm NXB nhanh</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'admin_add_publisher' %}" id="quickPublisherForm">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <input type="text" name="name" class="form-control form-control-sm" placeholder="Tên NXB" required>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success w-100">Thêm</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-generate slug from title
+document.querySelector('input[name="title"]').addEventListener('input', function(e) {
+    const slugInput = document.querySelector('input[name="slug"]');
+    if (!slugInput.value || slugInput.dataset.autoGenerated) {
+        const slug = e.target.value
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+            .replace(/đ/g, 'd')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+        slugInput.value = slug;
+        slugInput.dataset.autoGenerated = 'true';
+    }
+});
+
+document.querySelector('input[name="slug"]').addEventListener('input', function() {
+    if (this.value) {
+        delete this.dataset.autoGenerated;
+    }
+});
+
+// Quick forms submit handling
+document.querySelectorAll('#quickCategoryForm, #quickAuthorForm, #quickPublisherForm').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: new FormData(this),
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Thêm thành công! Tải lại trang để thấy kết quả.');
+                this.reset();
+                location.reload();
+            } else {
+                alert('Có lỗi xảy ra!');
+            }
+        })
+        .catch(err => alert('Lỗi: ' + err.message));
+    });
+});
+</script>
+{% endblock %}

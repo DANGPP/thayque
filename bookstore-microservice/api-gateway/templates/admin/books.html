@@ -95,7 +95,7 @@
                 <h5 class="modal-title fw-bold">Thêm sách mới</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'admin_add_book' %}">
+            <form method="post" action="{% url 'admin_book_create' %}">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="row">

@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.db.models import Q
+from django.utils.text import slugify
 
 from .models import Category, Author, Publisher, Book, BookImage
 from .serializers import (
@@ -18,7 +19,12 @@ class CategoryListCreateView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = CategorySerializer(data=request.data)
+        data = dict(request.data)
+        # Auto-generate slug if not provided
+        if not data.get('slug') and data.get('name'):
+            data['slug'] = slugify(data['name'])
+        
+        serializer = CategorySerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -148,7 +154,12 @@ class BookListCreateView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = BookSerializer(data=request.data)
+        data = dict(request.data)
+        # Auto-generate slug if not provided
+        if not data.get('slug') and data.get('title'):
+            data['slug'] = slugify(data['title'])
+        
+        serializer = BookSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

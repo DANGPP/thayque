@@ -103,7 +103,7 @@
                 <h5 class="modal-title fw-bold">Thêm danh mục</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'admin_add_category' %}">
+            <form method="post" action="{% url 'admin_categories' %}">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
@@ -132,7 +132,7 @@
                 <h5 class="modal-title fw-bold">Thêm tác giả</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'admin_add_author' %}">
+            <form method="post" action="{% url 'admin_add_author' %}" id="addAuthorForm">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
@@ -161,7 +161,7 @@
                 <h5 class="modal-title fw-bold">Thêm nhà xuất bản</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'admin_add_publisher' %}">
+            <form method="post" action="{% url 'admin_add_publisher' %}" id="addPublisherForm">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">

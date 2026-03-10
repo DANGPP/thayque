@@ -500,10 +500,14 @@ class AdminCategoriesView(View):
             return redirect('admin_login')
         
         categories = ServiceClient.get('book', 'categories/') or []
+        authors = ServiceClient.get('book', 'authors/') or []
+        publishers = ServiceClient.get('book', 'publishers/') or []
         
         context = {
             'staff': staff,
             'categories': categories,
+            'authors': authors,
+            'publishers': publishers,
         }
         return render(request, 'admin/categories.html', context)
     
@@ -542,6 +546,49 @@ class AdminReviewsView(View):
             'reviews': reviews,
         }
         return render(request, 'admin/reviews.html', context)
+
+
+class AdminAddAuthorView(View):
+    """Thêm tác giả"""
+    def post(self, request):
+        staff = request.session.get('staff')
+        if not staff:
+            return redirect('admin_login')
+        
+        data = {
+            'name': request.POST.get('name'),
+            'bio': request.POST.get('bio', ''),
+        }
+        
+        result, status_code = ServiceClient.post('book', 'authors/', data)
+        
+        if status_code == 201:
+            messages.success(request, 'Thêm tác giả thành công!')
+        else:
+            messages.error(request, 'Thêm tác giả thất bại')
+        
+        return redirect('admin_categories')
+
+
+class AdminAddPublisherView(View):
+    """Thêm nhà xuất bản"""
+    def post(self, request):
+        staff = request.session.get('staff')
+        if not staff:
+            return redirect('admin_login')
+        
+        data = {
+            'name': request.POST.get('name'),
+        }
+        
+        result, status_code = ServiceClient.post('book', 'publishers/', data)
+        
+        if status_code == 201:
+            messages.success(request, 'Thêm NXB thành công!')
+        else:
+            messages.error(request, 'Thêm NXB thất bại')
+        
+        return redirect('admin_categories')
 
 
 # ==================== API PROXY ====================
